@@ -2,7 +2,7 @@
 .settings
 .classpath
 .idea
-.iml
+*.iml
 target
 infinitest.filters
 config.xml
