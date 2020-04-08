@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>hasCode.com - Vert.x Websocket Tutorial</title>
+<title>Websocket chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="">
-<meta name="author" content="Micha Kops">
 
 <script src="resource/js/jquery-1.10.2.min.js"></script>
 
@@ -62,16 +61,7 @@ body {
       <script src="./resource/js/html5shiv.js"></script>
     <![endif]-->
 
-<!-- Fav and touch icons -->
-<link rel="apple-touch-icon-precomposed" sizes="144x144"
-	href="./resource/ico/apple-touch-icon-144-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="114x114"
-	href="./resource/ico/apple-touch-icon-114-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="72x72"
-	href="./resource/ico/apple-touch-icon-72-precomposed.png">
-<link rel="apple-touch-icon-precomposed"
-	href="./resource/ico/apple-touch-icon-57-precomposed.png">
-<link rel="shortcut icon" href="./resource/ico/favicon.png">
+
 <script>
 	var wsocket;
 	var serviceLocation = "ws://localhost:8090/chat/";
@@ -81,6 +71,7 @@ body {
 	var room = '';
 
 	function onMessageReceived(evt) {
+		console.log(evt.data)
 		var msg = JSON.parse(evt.data); // native API
 		var $messageLine = $('<tr><td class="received">' + msg.received
 				+ '</td><td class="user label label-info">' + msg.sender
@@ -89,19 +80,32 @@ body {
 		$chatWindow.append($messageLine);
 	}
 	function sendMessage() {
-		var msg = '{"message":"' + $message.val() + '", "sender":"'
-				+ $nickName.val() + '", "received":""}';
+		var msg = '{"method":"send_message", "message":"'
+				+ $message.val()
+				+ '", "sender":"'
+				+ $nickName.val()
+				+ '", "received":""}';
+		wsocket.send(msg);
+		$message.val('').focus();
+	}
+
+	function getHistory(evt) {
+		var msg = '{"method":"get_history"}';
 		wsocket.send(msg);
 		$message.val('').focus();
 	}
 
 	function connectToChatserver() {
 		room = $('#chatroom').val();
-		wsocket = new WebSocket(serviceLocation + room);
+		user = $('#nickname').val();
+		wsocket = new WebSocket(serviceLocation + room + '/' + user);
 		wsocket.onmessage = onMessageReceived;
+		wsocket.onopen = getHistory;
 	}
 
 	function leaveRoom() {
+		var msg = '{"method":"close"}';
+		wsocket.send(msg);
 		wsocket.close();
 		$chatWindow.empty();
 		$('.chat-wrapper').hide();
