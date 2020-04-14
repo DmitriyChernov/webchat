@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.asyncsql.MySQLClient;
+import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
@@ -20,24 +21,91 @@ import java.util.Date;
 import java.util.List;
 
 
-public class MySQLDataSource implements IDataSource {
+public class H2DataSource implements IDataSource {
     private final static Logger logger = LoggerFactory.getLogger(WSGetHistoryHandler.class);
 
     private SQLClient client;
 
-    public MySQLDataSource(Vertx vertx) {
+    public H2DataSource(Vertx vertx) {
         try {
             JsonObject mySQLClientConfig = new JsonObject()
-                    .put("url", "jdbc:mysql:" + Config.getDBHost() + ":" + Config.getDBPort())
-                    .put("max_pool_size", Config.getDBMaxPoolSize())
+                    .put("url", "jdbc:h2:mem:" + Config.getDBSchema() + ";INIT=CREATE SCHEMA IF NOT EXISTS CHAT")
+                    .put("max_pool_size", 30)
                     .put("username", Config.getDBUsername())
-                    .put("password", Config.getDBPassword())
-                    .put("database", Config.getDBName());
-            client = MySQLClient.createShared(vertx, mySQLClientConfig);
+                    .put("password", Config.getDBPassword());
+            client = JDBCClient.createShared(vertx, mySQLClientConfig);
+            initDatabase();
         } catch (Exception ex) {
             logger.error("Error when connecting to db!");
             ex.printStackTrace();
         }
+    }
+
+    private void initDatabase() {
+        client.getConnection(con -> {
+            if (con.succeeded()) {
+                SQLConnection connection = con.result();
+                String sqlChats = "CREATE TABLE chat.chats (\n" +
+                        "  id int(11) NOT NULL AUTO_INCREMENT,\n" +
+                        "  name varchar(50) DEFAULT NULL,\n" +
+                        "  PRIMARY KEY (id)\n" +
+                        ");\n" +
+                        "\n" +
+                        "ALTER TABLE chat.chats\n" +
+                        "ADD UNIQUE INDEX chat_name (name);";
+                String sqlUsers = "CREATE TABLE chat.users (\n" +
+                        "  id int(11) NOT NULL AUTO_INCREMENT,\n" +
+                        "  name varchar(50) DEFAULT NULL,\n" +
+                        "  PRIMARY KEY (id)\n" +
+                        ");\n" +
+                        "\n" +
+                        "ALTER TABLE chat.users\n" +
+                        "ADD UNIQUE INDEX user_name (name);";
+                String sqlUsersChats = "CREATE TABLE chat.users_chats (\n" +
+                        "  id int(11) NOT NULL AUTO_INCREMENT,\n" +
+                        "  chat_id int(11) DEFAULT NULL,\n" +
+                        "  sender_id int(11) DEFAULT NULL,\n" +
+                        "  date date DEFAULT NULL,\n" +
+                        "  message varchar(255) DEFAULT NULL,\n" +
+                        "  PRIMARY KEY (id)\n" +
+                        ");\n" +
+                        "\n" +
+                        "ALTER TABLE chat.users_chats\n" +
+                        "ADD CONSTRAINT FK_users_chats_chat_id FOREIGN KEY (chat_id)\n" +
+                        "REFERENCES chat.chats (id);";
+                connection.execute(sqlUsers, execute -> {
+                    if (execute.succeeded()) {
+                        logger.info("Table user created !");
+                    } else {
+                        logger.error("Error when creating table user!");
+                        con.cause().printStackTrace();
+                        System.exit(-1);
+                    }
+                });
+                connection.execute(sqlChats, execute -> {
+                    if (execute.succeeded()) {
+                        logger.info("Table chat created !");
+                    } else {
+                        logger.error("Error when creating table chats!");
+                        con.cause().printStackTrace();
+                        System.exit(-1);
+                    }
+                });
+                connection.execute(sqlUsersChats, execute -> {
+                    if (execute.succeeded()) {
+                        logger.info("Table users chats created !");
+                    } else {
+                        logger.error("Error when creating table users chats!");
+                        con.cause().printStackTrace();
+                        System.exit(-1);
+                    }
+                });
+            } else {
+                logger.error("Error when putting user!");
+                con.cause().printStackTrace();
+                System.exit(-1);
+            }
+        });
     }
 
     @Override
@@ -45,7 +113,7 @@ public class MySQLDataSource implements IDataSource {
         client.getConnection(con -> {
             if (con.succeeded()) {
                 SQLConnection connection = con.result();
-                String statement = "INSERT IGNORE INTO chat.users (name) VALUES (?)";
+                String statement = "MERGE INTO CHAT.USERS(name) KEY (name) VALUES (?)";
                 JsonArray params = new JsonArray().add(userName);
                 updateWithParams(connection, statement, params);
             } else {
@@ -61,12 +129,12 @@ public class MySQLDataSource implements IDataSource {
         client.getConnection(con -> {
             if (con.succeeded()) {
                 SQLConnection connection = con.result();
-                String statement = "INSERT IGNORE INTO chat.chats (name) VALUES (?)";
+                String statement = "MERGE INTO CHAT.CHATS(name) KEY (name) VALUES (?)";
                 JsonArray params = new JsonArray().add(chatName);
                 updateWithParams(connection, statement, params);
             } else {
                 logger.error("Failed to get connection to db!");
-                logger.error(con.cause().getStackTrace());
+                con.cause().printStackTrace();
                 System.exit(-1);
             }
         });
@@ -74,6 +142,7 @@ public class MySQLDataSource implements IDataSource {
 
     @Override
     public void putMessage(String user, String chat, Date date, String message) {
+        logger.info("INSERTING MESSAGE" + message);
         client.getConnection(con -> {
             if (con.succeeded()) {
                 SQLConnection connection = con.result();
@@ -81,7 +150,7 @@ public class MySQLDataSource implements IDataSource {
                         "VALUES(\n" +
                         "    (SELECT id FROM chat.chats where name = ?),\n" +
                         "    (SELECT id FROM chat.users where name = ?),\n" +
-                        "    STR_TO_DATE(?,'%Y-%m-%dT%H:%i:%s'),\n" +
+                        "    PARSEDATETIME(?,'yyyy-MM-dd HH:mm:ss', 'en'),\n" +
                         "    ?\n)";
                 JsonArray params = null;
                 try {
@@ -95,7 +164,7 @@ public class MySQLDataSource implements IDataSource {
                 updateWithParams(connection, statement, params);
             } else {
                 logger.error("Failed to get connection to db!");
-                logger.error(con.cause().getStackTrace());
+                con.cause().printStackTrace();
                 System.exit(-1);
             }
         });
@@ -122,7 +191,7 @@ public class MySQLDataSource implements IDataSource {
                 });
             } else {
                 logger.error("Failed to get connection to db!");
-                logger.error(con.cause().getStackTrace());
+                con.cause().printStackTrace();
                 System.exit(-1);
             }
         });
@@ -136,8 +205,7 @@ public class MySQLDataSource implements IDataSource {
                         UpdateResult rs = res.result();
                     } else {
                         logger.error("Updating failed!");
-                        logger.error(res.cause().getCause());
-                        logger.error(res.cause().getStackTrace());
+                        res.cause().printStackTrace();
                         System.exit(-1);
                     }
                 });

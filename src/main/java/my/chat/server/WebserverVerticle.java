@@ -29,7 +29,6 @@ public class WebserverVerticle extends AbstractVerticle {
 		//init
 		vertx = getVertx();
 		eventBus = vertx.eventBus();
-		//dataSource = new MySQLDataSource(vertx);
 
 		//http routing
 		final Router httpRouteMatcher = Router.router(vertx);

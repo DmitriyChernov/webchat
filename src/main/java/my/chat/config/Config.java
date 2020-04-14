@@ -21,6 +21,10 @@ public class Config {
         return config.getString("db/host");
     }
 
+    public static String getDBSchema() {
+        return config.getString("db/schema");
+    }
+
     public static String getDBPort() {
         return config.getString("db/port");
     }

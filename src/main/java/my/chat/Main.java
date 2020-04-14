@@ -3,6 +3,7 @@ package my.chat;
 import io.vertx.core.Vertx;
 import my.chat.config.Config;
 import my.chat.config.XMLConfig;
+import my.chat.datasource.H2DataSource;
 import my.chat.datasource.IDataSource;
 import my.chat.datasource.MySQLDataSource;
 import my.chat.server.WebserverVerticle;
@@ -19,7 +20,8 @@ public class Main {
 
         // Running vertx
         Vertx vertx = Vertx.vertx();
-        IDataSource dataSource = new MySQLDataSource(vertx);
+        IDataSource dataSource = new H2DataSource(vertx);
+        //IDataSource dataSource = new MySQLDataSource(vertx);
         vertx.deployVerticle(new WebserverVerticle(dataSource));
     }
 }

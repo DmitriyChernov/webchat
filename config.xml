@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<server>
+		<http-port>8089</http-port>
+		<ws-port>8090</ws-port>
+	</server>
+    <db>
+        <host>localhost</host>
+		<port>3306</port>
+		<max-pool-size>30</max-pool-size>
+		<db>chat</db>
+		<username>chat</username>
+		<password>dhjnvytyjub1</password>
+    </db>
+</configuration>

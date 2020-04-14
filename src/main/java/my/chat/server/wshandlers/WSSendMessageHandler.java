@@ -48,7 +48,7 @@ public class WSSendMessageHandler implements Handler<JsonNode> {
             }
         } catch (IOException ex) {
             logger.error("Error when receiving ws data!");
-            logger.error(ex.getStackTrace());
+            ex.printStackTrace();
             ws.reject();
         }
     }

@@ -13,6 +13,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import my.chat.config.Config;
 import my.chat.config.XMLConfig;
+import my.chat.datasource.H2DataSource;
 import my.chat.datasource.IDataSource;
 import my.chat.server.WebserverVerticle;
 import my.chat.server.wshandlers.WSOpenHandler;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

@@ -52,11 +52,11 @@ public class WSMessageHandler implements Handler<Buffer> {
             }
         } catch (IOException ex) {
             logger.error("Error when receiving ws data!");
-            logger.error(ex.getStackTrace());
+            ex.printStackTrace();
             ws.reject();
         } catch (NoSuchMethodException ex) {
             logger.error("Error parsing ws data!");
-            logger.error(ex.getStackTrace());
+            ex.printStackTrace();
             ws.reject();
         }
     }

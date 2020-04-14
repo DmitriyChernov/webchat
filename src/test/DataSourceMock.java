@@ -29,8 +29,8 @@ public class DataSourceMock implements IDataSource {
     @Override
     public void getHistory(String chatName, Handler<List<JsonObject>> done) {
         List<JsonObject> history = new LinkedList<>();
-        history.add(new JsonObject().put("message", "{\"message\":\"test\",\"sender\":\"test\",\"received\":\"test\"}"));
-        history.add(new JsonObject().put("message", "{\"message\":\"test\",\"sender\":\"test\",\"received\":\"test\"}"));
+        history.add(new JsonObject().put("MESSAGE", "{\"message\":\"test\",\"sender\":\"test\",\"received\":\"test\"}"));
+        history.add(new JsonObject().put("MESSAGE", "{\"message\":\"test\",\"sender\":\"test\",\"received\":\"test\"}"));
         done.handle(history);
     }
 }

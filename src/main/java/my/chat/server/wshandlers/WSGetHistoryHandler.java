@@ -26,14 +26,17 @@ public class WSGetHistoryHandler implements Handler<List<JsonObject>> {
     public void handle(List<JsonObject> messages) {
         logger.info("get_history");
         for (JsonObject m : messages) {
-            System.out.println(m);
-            String msg = m.getString("message");
+            String msg = m.getString("MESSAGE") == null ? m.getString("message") : m.getString("MESSAGE");
+            if (msg == null) {
+                logger.error("something went wrong on parsing history message.");
+                System.exit(-1);
+            }
             try {
-                logger.info("receiving message: "+ msg + " sended for " + user + " to chat " + chat);
+                logger.info("receiving message: " + msg + " sended for " + user + " to chat " + chat);
                 wv.eventBus.send(id, msg);
             } catch(Exception ex) {
-                logger.error("something went wrong on sending message.");
-                logger.error(ex.getStackTrace());
+                logger.error("something went wrong on sending history message.");
+                ex.printStackTrace();
                 System.exit(-1);
             }
         }
