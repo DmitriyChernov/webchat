@@ -17,25 +17,13 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-		<!-- Set pullInDeps to true if you want any modules specified in the 'includes' 
-			and 'deploys' fields in your mod.json to be automatically pulled in during 
-			packaging and added inside your module. Doing this means your module won't 
+		<!-- Set pullInDeps to true if you want any modules specified in the 'includes'
+			and 'deploys' fields in your mod.json to be automatically pulled in during
+			packaging and added inside your module. Doing this means your module won't
 			download and install those dependencies at run-time when they're first requested. -->
 		<vertx.pullInDeps>false</vertx.pullInDeps>
-
 		<!--Vertx module name -->
 		<module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-
-		<!--Plugin versions -->
-		<maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
-		<maven.resources.plugin.version>2.6</maven.resources.plugin.version>
-		<maven.clean.plugin.version>2.5</maven.clean.plugin.version>
-		<maven.surefire.plugin.version>2.14</maven.surefire.plugin.version>
-		<maven.failsafe.plugin.version>2.14</maven.failsafe.plugin.version>
-		<maven.surefire.report.plugin.version>2.14</maven.surefire.report.plugin.version>
-		<maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
-		<maven.dependency.plugin.version>2.7</maven.dependency.plugin.version>
 	</properties>
 
 	<repositories>
@@ -46,13 +34,12 @@
 	</repositories>
 
 	<dependencies>
-		<!--Vertx provided dependencies -->
+		<!--Vertx & common dependencies-->
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>
 			<version>3.8.5</version>
 		</dependency>
-
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web</artifactId>
@@ -93,7 +80,6 @@
 			<artifactId>vertx-jdbc-client</artifactId>
 			<version>3.8.5</version>
 		</dependency>
-
 		<!-- TEST -->
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -126,7 +112,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven.compiler.plugin.version}</version>
+				<version>3.8.1</version>
 				<configuration>
 					<source>8</source>
 					<target>8</target>
@@ -166,7 +152,6 @@
 				<version>1.4.0</version>
 				<executions>
 					<execution>
-						<!-- run the application using the fat jar -->
 						<id>run-app</id>
 						<goals>
 							<goal>exec</goal>
@@ -186,7 +171,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>${maven.resources.plugin.version}</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>copy-mod-to-target</id>
@@ -209,7 +194,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>${maven.dependency.plugin.version}</version>
+				<version>3.1.2</version>
 				<executions>
 					<execution>
 						<id>copy-mod-dependencies-to-target</id>
